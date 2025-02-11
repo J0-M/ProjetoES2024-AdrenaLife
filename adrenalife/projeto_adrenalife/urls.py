@@ -8,5 +8,6 @@ urlpatterns = [
     #rota é "adrenalife.com"
     path('admin/', admin.site.urls),
     path('',views.home,name='home'),
+    path('cadastro_evento',views.cadastro_evento,name='cadastro_evento'),
 
 ]

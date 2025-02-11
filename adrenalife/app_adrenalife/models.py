@@ -18,7 +18,7 @@ class atividade(models.Model):
 
 class evento(models.Model):
     #relacionamento com atividade 
-    id = models.IntegerField()
+    id = models.IntegerField(primary_key=True)
     valor = models.IntegerField()
     vagas_disponiveis = models.IntegerField()
     data = models.DateTimeField()

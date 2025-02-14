@@ -1,5 +1,5 @@
 
-from django.urls import path
+from django.urls import path, include
 from app_adrenalife import views
 from django.contrib import admin
 
@@ -9,5 +9,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('',views.home,name='home'),
     path('cadastro_evento',views.cadastro_evento,name='cadastro_evento'),
-
+    path('cadastro_atividades', views.cadastro_atividades, name='cadastro_atividades'),
+    
+    path('api/', include('app_adrenalife.urls'), name='api_urls')
 ]

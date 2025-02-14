@@ -16,7 +16,7 @@ class atividade(models.Model):
     nome = models.TextField(max_length=255)
     descricao = models.TextField(max_length=255)
 
-class evento(models.Model):
+class Evento(models.Model):
     #relacionamento com atividade 
     id = models.IntegerField(primary_key=True)
     valor = models.IntegerField()

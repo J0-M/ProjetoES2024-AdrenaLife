@@ -71,6 +71,13 @@ def categoriaManager(request):
     if request.method == 'POST':
         
         newCategoria = request.data
+        name = newCategoria.get("nome", None)
+        
+        categoriaTest = categoria_atividade.objects.filter(nome=name)
+        
+        if categoriaTest.exists():
+            return Response({"Nome já cadastrado"}, status=status.HTTP_400_BAD_REQUEST)
+        
         serializer = categoriaAtividadeSerializer(data=newCategoria)
         
         if serializer.is_valid():
@@ -85,13 +92,19 @@ def categoriaManager(request):
         name = request.GET.get('nome', None) # api/categoia/?nome=xxxxx, xxxxx será o objeto a ser alterado
         
         if not name:
-            return Response(status=status.HTTP_400_BAD_REQUEST, body="Nome não informado")
+            return Response({"Nome não informado"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        nameTest = data.get("nome", None)
+        categoriaTest = categoria_atividade.objects.filter(nome=nameTest)
+        
+        if categoriaTest.exists():
+            return Response({"Nome já cadastrado"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             updatedcategoria = categoria_atividade.objects.get(nome=name)
         
         except:
-            return Response(status=status.HTTP_404_NOT_FOUND, body="Categoria não encontrada")
+            return Response({"Categoria não encontrada"}, status=status.HTTP_404_NOT_FOUND)
         
         serializer = categoriaAtividadeSerializer(updatedcategoria, data=data, partial=True)
         
@@ -105,7 +118,7 @@ def categoriaManager(request):
         name = request.GET.get('nome', None)  # name = ?nome=xxxxx
         
         if not name:
-            return Response(status=status.HTTP_400_BAD_REQUEST, body="Nome não informado")
+            return Response({"Nome não informado"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             categoria = categoria_atividade.objects.get(nome=name)
@@ -113,7 +126,7 @@ def categoriaManager(request):
             return Response(status=status.HTTP_200_OK)
         
         except:
-            return Response(status=status.HTTP_404_NOT_FOUND, body="Categoria não encontrada")
+            return Response({"Categoria não encontrada"}, status=status.HTTP_404_NOT_FOUND)
 
 #Funções de acesso ao BD
 # data = class.object.get(campo='parametro') = SELECT .. WHERE pk = parametro                  ##OBJETO

@@ -27,7 +27,7 @@ class evento(models.Model):
     data = models.DateTimeField()
 
 class categoria_atividade(models.Model):
-    id = models.AutoField(primary_key=True)
+    id = models.IntegerField(primary_key=True)
     nome = models.TextField(max_length=255, default='')
     def __str__(self):
         return f'Nome: {self.nome}'

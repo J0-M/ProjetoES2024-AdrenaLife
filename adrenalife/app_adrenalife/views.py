@@ -1,5 +1,4 @@
 from django.shortcuts import render
-<<<<<<< HEAD
 from django.http import HttpResponse, JsonResponse
 import json
 
@@ -13,9 +12,7 @@ from rest_framework import status
 from .models import categoria_atividade
 from .serializers import categoriaAtividadeSerializer
 
-=======
 from .models import Evento
->>>>>>> main
 
 def home(request):
     return render(request, 'usuarios/home.html')
@@ -23,16 +20,12 @@ def home(request):
 def cadastro_evento(request):
     return render(request, 'eventos/cadastro_evento.html')
 
-<<<<<<< HEAD
 def cadastro_atividades(request):
     return render(request, 'atividades/cadastro_atividades.html')
 
 def categoria_atividades(request):
     return render(request, 'atividades/categoria_atividades.html')
 ##########################
-
-
-
 
 @csrf_exempt
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
@@ -124,9 +117,9 @@ def categoriaManager(request):
 # data = class.object.exclude(age='25') = SELECT FROM class WHERE AGE != 25                 ##QUERYSET
 # data.save() = Insere no banco de dados
 # data.delete() = DELETE
-=======
+
 def eventos(request):
-    # salvar os dados da tela para o banco de dados
+    # salvar os dados da tela para o banco de dados"
     novo_evento = Evento()
     novo_evento.valor = request.POST.get('valor')
     novo_evento.vagas_disponiveis = request.POST.get('vagas_disponiveis')
@@ -139,4 +132,3 @@ def eventos(request):
     # retornar os dados para a página de listagem de usuários
     return render(request, 'eventos/eventos.html', eventos)
         
->>>>>>> main

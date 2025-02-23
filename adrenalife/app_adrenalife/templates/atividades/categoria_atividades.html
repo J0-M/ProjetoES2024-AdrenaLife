@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block conteudo %}
+    <h2>Gerenciamento de Categorias</h2>
+
+    <form id="categoriaForm">
+        <input type="text" id="categoriaNome" placeholder="Nome da Categoria" required>
+        <button type="submit">Adicionar Categoria</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="categoriasTabela"></tbody>
+    </table>
+
+    <script>
+        // Função para carregar categorias
+        function carregarCategorias() {
+            fetch('/apiCategorias/categorias/')
+                .then(response => response.json())
+                .then(data => {
+                    let tabela = document.getElementById("categoriasTabela");
+                    tabela.innerHTML = ""; // Limpa a tabela
+
+                    data.forEach(categoria => {
+                        let row = `<tr>
+                            <td>${categoria.nome}</td>
+                            <td>
+                                <button onclick="editarCategoria('${categoria.nome}')">Editar</button>
+                                <button onclick="deletarCategoria('${categoria.nome}')">Excluir</button>
+                            </td>
+                        </tr>`;
+                        tabela.innerHTML += row;
+                    });
+                });
+        }
+
+        // Função para adicionar categoria
+        document.getElementById("categoriaForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let nome = document.getElementById("categoriaNome").value;
+
+            fetch('/apiCategorias/categorias/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nome: nome })
+            }).then(response => {
+                if (response.status === 201) {
+                    carregarCategorias();
+                    document.getElementById("categoriaNome").value = "";
+                } else {
+                    alert("Erro ao adicionar categoria!");
+                }
+            });
+        });
+
+        // Função para excluir categoria
+        function deletarCategoria(nome) {
+            fetch(`/apiCategorias/categorias/?nome=${nome}`, {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.status === 200) {
+                    carregarCategorias();
+                } else {
+                    alert("Erro ao excluir categoria!");
+                }
+            });
+        }
+
+        // Função para editar categoria (simplesmente preenche o campo para reenvio)
+        function editarCategoria(nomeAtual) {
+            let novoNome = prompt("Digite o novo nome da categoria:", nomeAtual);
+            if (novoNome && novoNome !== nomeAtual) {
+                fetch(`/apiCategorias/categorias/?nome=${nomeAtual}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: novoNome })
+                }).then(response => {
+                    if (response.status === 202) {
+                        carregarCategorias();
+                    } else {
+                        alert("Erro ao editar categoria!");
+                    }
+                });
+            }
+        }
+
+        // Carrega as categorias ao carregar a página
+        carregarCategorias();
+    </script>
+{%endblock%}

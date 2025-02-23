@@ -2,7 +2,10 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import json
 
-from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
+
+from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -19,34 +22,16 @@ def cadastro_evento(request):
 def cadastro_atividades(request):
     return render(request, 'atividades/cadastro_atividades.html')
 
-
+def categoria_atividades(request):
+    return render(request, 'atividades/categoria_atividades.html')
 ##########################
 
 
-@api_view(['GET'])
-def getCategoriasAtividades(request):
-    if request.method == 'GET':
-        categorias = categoria_atividade.objects.all()
-        
-        serializer = categoriaAtividadeSerializer(categorias, many=True)
-        return Response(serializer.data)
-    
-    return Response(status=status.HTTP_400_BAD_REQUEST)
-    
-@api_view(['GET'])
-def getCategoriaByName(request, name):
-    try:
-        categoria = categoria_atividade.objects.get(nome=name)
-    except:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-    
-    if request.method == 'GET':
-        serializer = categoriaAtividadeSerializer(categoria)
-        return Response(serializer.data)
-    
-    return Response(status=status.HTTP_400_BAD_REQUEST)
 
+
+@csrf_exempt
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
+@permission_classes([AllowAny])
 def categoriaManager(request):
     
     # GET um objeto

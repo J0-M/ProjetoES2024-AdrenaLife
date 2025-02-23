@@ -19,7 +19,7 @@ class atividade(models.Model):
     def __str__(self):
         return f'Nome: {self.nome} | Descrição: {self.descricao}'
 
-class evento(models.Model):
+class Evento(models.Model):
     #relacionamento com atividade 
     id = models.IntegerField(primary_key=True)
     valor = models.IntegerField()

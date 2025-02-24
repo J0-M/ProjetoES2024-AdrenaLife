@@ -1,24 +1,52 @@
 {% extends 'base.html' %}
+
 {% block conteudo %}
-    <h2>Gerenciamento de Categorias</h2>
+    <div class="container mt-5">
+        <h2>Gerenciamento de Categorias</h2>
 
-    <form id="categoriaForm">
-        <input type="text" id="categoriaNome" placeholder="Nome da Categoria" required>
-        <button type="submit">Adicionar Categoria</button>
-    </form>
+        <!-- Formulário para adicionar nova categoria -->
+        <form id="categoriaForm" class="mb-4">
+            <input type="text" id="categoriaNome" class="form-control mb-2" placeholder="Nome da Categoria" required>
+            <button type="submit" class="btn btn-primary">Adicionar Categoria</button>
+        </form>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Ações</th>
-            </tr>
-        </thead>
-        <tbody id="categoriasTabela"></tbody>
-    </table>
+        <!-- Tabela para exibir as categorias -->
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="categoriasTabela"></tbody>
+        </table>
+
+        <!-- Modal para editar categoria -->
+        <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editarModalLabel">Editar Categoria</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="modalCategoriaNome" class="form-control" placeholder="Novo nome da categoria" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                        <button type="button" class="btn btn-primary" id="salvarAlteracoesCategoria">Salvar alterações</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS (com dependências) -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-XwZzFxO5tQsd0AzZt8z5BZFrsgNOenE5/JrQG4CKrnE9RGzZ7Vs9jzAz8QKh9Rjq" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-c5aFZONuK5ql7HreMwKi5f5E31D5HGtoKMnzdBktFaI6A0t2tDBI3k8lKlY2JIz5" crossorigin="anonymous"></script>
 
     <script>
-        // Função para carregar categorias
+        // Função para carregar as categorias
         function carregarCategorias() {
             fetch('/apiCategorias/categorias/')
                 .then(response => response.json())
@@ -30,8 +58,8 @@
                         let row = `<tr>
                             <td>${categoria.nome}</td>
                             <td>
-                                <button onclick="editarCategoria('${categoria.nome}')">Editar</button>
-                                <button onclick="deletarCategoria('${categoria.nome}')">Excluir</button>
+                                <button class="btn btn-warning btn-sm" onclick="abrirModalEditarCategoria('${categoria.nome}')">Editar</button>
+                                <button class="btn btn-danger btn-sm" onclick="deletarCategoria('${categoria.nome}')">Excluir</button>
                             </td>
                         </tr>`;
                         tabela.innerHTML += row;
@@ -39,7 +67,7 @@
                 });
         }
 
-        // Função para adicionar categoria
+        // Função para adicionar nova categoria
         document.getElementById("categoriaForm").addEventListener("submit", function(event) {
             event.preventDefault();
             let nome = document.getElementById("categoriaNome").value;
@@ -71,25 +99,36 @@
             });
         }
 
-        // Função para editar categoria (simplesmente preenche o campo para reenvio)
-        function editarCategoria(nomeAtual) {
-            let novoNome = prompt("Digite o novo nome da categoria:", nomeAtual);
-            if (novoNome && novoNome !== nomeAtual) {
-                fetch(`/apiCategorias/categorias/?nome=${nomeAtual}`, {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nome: novoNome })
-                }).then(response => {
-                    if (response.status === 202) {
-                        carregarCategorias();
-                    } else {
-                        alert("Erro ao editar categoria!");
-                    }
-                });
-            }
+        // Função para abrir a modal de edição
+        function abrirModalEditarCategoria(nomeAtual) {
+            let modal = new bootstrap.Modal(document.getElementById('editarModal'));
+            document.getElementById("modalCategoriaNome").value = nomeAtual;
+
+            document.getElementById("salvarAlteracoesCategoria").onclick = function() {
+                let novoNome = document.getElementById("modalCategoriaNome").value;
+
+                if (novoNome && novoNome !== nomeAtual) {
+                    fetch(`/apiCategorias/categorias/?nome=${nomeAtual}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ nome: novoNome })
+                    }).then(response => {
+                        if (response.status === 202) {
+                            carregarCategorias();
+                            modal.hide();
+                        } else {
+                            alert("Erro ao editar categoria!");
+                        }
+                    });
+                }
+            };
+
+            modal.show();
         }
 
         // Carrega as categorias ao carregar a página
-        carregarCategorias();
+        window.onload = function() {
+            carregarCategorias();
+        };
     </script>
-{%endblock%}
+{% endblock %}

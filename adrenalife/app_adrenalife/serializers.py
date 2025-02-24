@@ -6,9 +6,10 @@ from .models import atividade
 class categoriaAtividadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = categoria_atividade
-        fields = ['nome']
+        fields = ['id', 'nome']
+        read_only_fields = ['id']
         
 class atividadeSerializer(serializers.ModelSerializer):
     class Meta:
         model = atividade
-        fields = ['nome', 'descricao', 'categoria']
+        fields = ['id', 'nome', 'descricao', 'categoria']

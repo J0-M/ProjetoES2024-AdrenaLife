@@ -1,11 +1,189 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Atividades</title>
-</head>
-<body>
-    <h1>Teste</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block conteudo %}
+<div class="container mt-5">
+    <h2>Gerenciamento de Atividades</h2>
+
+    <!-- Formulário para adicionar nova atividade -->
+    <form id="atividadeForm">
+        <input type="text" id="atividadeNome" class="form-control mb-2" placeholder="Nome da Atividade" required>
+        <input type="text" id="atividadeDescricao" class="form-control mb-2" placeholder="Descrição" required>
+
+        <!-- Caixa de seleção para categoria -->
+        <select id="atividadeCategoria" class="form-select mb-2" required>
+            <option value="" disabled selected>Escolha uma Categoria</option>
+        </select>
+
+        <button type="submit" class="btn btn-primary">Adicionar Atividade</button>
+    </form>
+
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="atividadesTabela"></tbody>
+    </table>
+
+    <!-- Modal -->
+    <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editarModalLabel">Editar Atividade</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Formulário dentro da modal -->
+                    <input type="text" id="modalNome" class="form-control mb-2" placeholder="Nome da Atividade" required>
+                    <input type="text" id="modalDescricao" class="form-control mb-2" placeholder="Descrição" required>
+
+                    <!-- Caixa de seleção para categoria -->
+                    <select id="modalCategoria" class="form-select mb-2" required>
+                        <option value="" disabled selected>Escolha uma Categoria</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                    <button type="button" class="btn btn-primary" id="salvarAlteracoes">Salvar alterações</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Bootstrap JS (com dependências) -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js" integrity="sha384-XwZzFxO5tQsd0AzZt8z5BZFrsgNOenE5/JrQG4CKrnE9RGzZ7Vs9jzAz8QKh9Rjq" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-c5aFZONuK5ql7HreMwKi5f5E31D5HGtoKMnzdBktFaI6A0t2tDBI3k8lKlY2JIz5" crossorigin="anonymous"></script>
+
+<script>
+    // Função para carregar as categorias
+    function carregarCategorias() {
+        fetch('/apiCategorias/categorias/')
+            .then(response => response.json())
+            .then(data => {
+                let categoriaSelect = document.getElementById("atividadeCategoria");
+                let modalCategoriaSelect = document.getElementById("modalCategoria");
+
+                // Limpar e preencher categorias na seleção
+                let clearAndFill = (selectElement) => {
+                    selectElement.innerHTML = '<option value="" disabled selected>Escolha uma Categoria</option>';
+                    data.forEach(categoria => {
+                        let option = document.createElement("option");
+                        option.value = categoria.id;
+                        option.textContent = categoria.nome;
+                        selectElement.appendChild(option);
+                    });
+                };
+
+                clearAndFill(categoriaSelect);
+                clearAndFill(modalCategoriaSelect);
+            });
+    }
+
+    // Função para carregar as atividades
+    function carregarAtividades() {
+        fetch('/apiAtividades/atividades/')
+            .then(response => response.json())
+            .then(data => {
+                let tabela = document.getElementById("atividadesTabela");
+                tabela.innerHTML = "";
+
+                data.forEach(atividade => {
+                    fetch(`/apiCategorias/categorias/?id=${atividade.categoria}`)
+                        .then(response => response.json())
+                        .then(categoria => {
+                            let row = `<tr>
+                                <td>${atividade.nome}</td>
+                                <td>${atividade.descricao}</td>
+                                <td>${categoria.nome}</td>
+                                <td>
+                                    <button class="btn btn-warning" onclick="editarAtividade(${atividade.id}, '${atividade.nome}', '${atividade.descricao}', ${categoria.id})">Editar</button>
+                                    <button class="btn btn-danger" onclick="deletarAtividade(${atividade.id})">Excluir</button>
+                                </td>
+                            </tr>`;
+                            tabela.innerHTML += row;
+                        });
+                });
+            });
+    }
+
+    // Função para adicionar nova atividade
+    document.getElementById("atividadeForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let nome = document.getElementById("atividadeNome").value;
+        let descricao = document.getElementById("atividadeDescricao").value;
+        let categoria = document.getElementById("atividadeCategoria").value;
+
+        fetch('/apiAtividades/atividades/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, descricao, categoria })
+        }).then(response => {
+            if (response.status === 201) {
+                carregarAtividades();
+                document.getElementById("atividadeNome").value = "";
+                document.getElementById("atividadeDescricao").value = "";
+                document.getElementById("atividadeCategoria").value = "";
+            } else {
+                alert("Erro ao adicionar atividade!");
+            }
+        });
+    });
+
+    // Função para excluir atividade
+    function deletarAtividade(id) {
+        fetch(`/apiAtividades/atividades/?id=${id}`, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.status === 200) {
+                carregarAtividades();
+            } else {
+                alert("Erro ao excluir atividade!");
+            }
+        });
+    }
+
+    // Função para abrir modal de edição
+    function editarAtividade(id, nomeAtual, descricaoAtual, categoriaAtual) {
+        let modal = new bootstrap.Modal(document.getElementById('editarModal'));
+        document.getElementById("modalNome").value = nomeAtual;
+        document.getElementById("modalDescricao").value = descricaoAtual;
+        document.getElementById("modalCategoria").value = categoriaAtual;
+
+        document.getElementById("salvarAlteracoes").onclick = function() {
+            let novoNome = document.getElementById("modalNome").value;
+            let novaDescricao = document.getElementById("modalDescricao").value;
+            let novaCategoria = document.getElementById("modalCategoria").value;
+
+            if (novoNome && novaDescricao && novaCategoria) {
+                fetch(`/apiAtividades/atividades/?id=${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: novoNome, descricao: novaDescricao, categoria: novaCategoria })
+                }).then(response => {
+                    if (response.status === 202) {
+                        carregarAtividades();
+                        modal.hide();
+                    } else {
+                        alert("Erro ao editar atividade!");
+                    }
+                });
+            }
+        };
+
+        modal.show();
+    }
+
+    // Carrega as categorias e as atividades ao carregar a página
+    window.onload = function() {
+        carregarCategorias();
+        carregarAtividades();
+    };
+</script>
+{% endblock %}

@@ -11,13 +11,21 @@ class Usuario(models.Model):
     email = models.EmailField(max_length=254)
     senha = models.CharField(max_length=8, null=True)
     
+class categoria_atividade(models.Model):
+    id = models.IntegerField(primary_key=True)
+    nome = models.TextField(max_length=255, default='')
+    def __str__(self):
+        return f'Nome: {self.nome}'
+
 class atividade(models.Model):
-    #relacionamento com categoria
     id = models.AutoField(primary_key=True)
     nome = models.TextField(max_length=255, default='')
     descricao = models.TextField(max_length=255, default='')
+    
+    categoria = models.ForeignKey(categoria_atividade, on_delete=models.CASCADE, null=False, default=1)
+    
     def __str__(self):
-        return f'Nome: {self.nome} | Descrição: {self.descricao}'
+        return f'Nome: {self.nome} | Descrição: {self.descricao} | Categoria: {self.categoria.nome}'
 
 class Evento(models.Model):
     #relacionamento com atividade 
@@ -25,10 +33,4 @@ class Evento(models.Model):
     valor = models.IntegerField()
     vagas_disponiveis = models.IntegerField()
     data = models.DateTimeField()
-
-class categoria_atividade(models.Model):
-    id = models.IntegerField(primary_key=True)
-    nome = models.TextField(max_length=255, default='')
-    def __str__(self):
-        return f'Nome: {self.nome}'
 

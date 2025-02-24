@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import json
+import traceback
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -9,7 +10,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import categoria_atividade
+from .models import atividade, categoria_atividade
 from .serializers import categoriaAtividadeSerializer
 
 from .models import Evento
@@ -105,11 +106,38 @@ def categoriaManager(request):
         
         try:
             categoria = categoria_atividade.objects.get(nome=name)
+            
             categoria.delete()
             return Response(status=status.HTTP_200_OK)
         
-        except:
-            return Response({"Categoria não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(traceback.format_exc())  # Mostra o erro completo no terminal/log
+            return Response({"erro": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+        #except:
+            #return Response({"Categoria não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+        
+@csrf_exempt
+@api_view(['GET', 'POST', 'DELETE', 'PUT'])
+@permission_classes([AllowAny])
+def atividadeManager(request):
+    
+    #if request.method == 'GET':
+        
+    
+    #if request.method == 'POST':
+        
+        
+    
+    #if request.method == 'PUT':
+        
+        
+    
+    #if request.method == 'DELETE':
+    
+    return None
+        
+
 
 #Funções de acesso ao BD
 # data = class.object.get(campo='parametro') = SELECT .. WHERE pk = parametro                  ##OBJETO

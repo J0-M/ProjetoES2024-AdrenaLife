@@ -11,6 +11,8 @@ urlpatterns = [
     path('cadastro_evento',views.cadastro_evento,name='cadastro_evento'),
     path('cadastro_atividades', views.cadastro_atividades, name='cadastro_atividades'),
     
-    path('apiCategorias/', include('app_adrenalife.urls'), name='api_urls'), # /api/(url) # links relacionados a api
+    path('apiCategorias/', include('app_adrenalife.urls'), name='api_cat'), # /api/(url) # links relacionados a api
+    path('apiAtividades/', include('app_adrenalife.urls'), name='api_att'),
+    
     path('categoria_atividades/', views.categoria_atividades, name='categoria_atividades')
 ]

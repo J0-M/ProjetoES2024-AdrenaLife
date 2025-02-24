@@ -22,7 +22,7 @@ class atividade(models.Model):
     nome = models.TextField(max_length=255, default='')
     descricao = models.TextField(max_length=255, default='')
     
-    categoria = models.ForeignKey(categoria_atividade, on_delete=models.CASCADE, null=False, default=1)
+    categoria = models.ForeignKey(categoria_atividade, on_delete=models.CASCADE, null=False)
     
     def __str__(self):
         return f'Nome: {self.nome} | Descrição: {self.descricao} | Categoria: {self.categoria.nome}'

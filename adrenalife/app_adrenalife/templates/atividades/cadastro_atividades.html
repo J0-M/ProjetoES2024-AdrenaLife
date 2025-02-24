@@ -1,11 +1,161 @@
-<!DOCTYPE html>
-<html lang="pt">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Atividades</title>
-</head>
-<body>
-    <h1>Teste</h1>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block conteudo %}
+    <h2>Gerenciamento de Atividades</h2>
+
+    <!-- Formulário para adicionar nova atividade -->
+    <form id="atividadeForm">
+        <input type="text" id="atividadeNome" placeholder="Nome da Atividade" required>
+        <input type="text" id="atividadeDescricao" placeholder="Descrição" required>
+
+        <!-- Caixa de seleção para categoria -->
+        <select id="atividadeCategoria" required>
+            <option value="" disabled selected>Escolha uma Categoria</option>
+        </select>
+
+        <button type="submit">Adicionar Atividade</button>
+    </form>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Descrição</th>
+                <th>Categoria</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="atividadesTabela"></tbody>
+    </table>
+
+    <script>
+        // Função para carregar as categorias
+        function carregarCategorias() {
+            fetch('/apiCategorias/categorias/')
+                .then(response => response.json())
+                .then(data => {
+                    //console.log(data);
+                    let categoriaSelect = document.getElementById("atividadeCategoria");
+                    categoriaSelect.innerHTML = '<option value="" disabled selected>Escolha uma Categoria</option>'; // Limpa as opções
+
+                    data.forEach(categoria => {
+                        let option = document.createElement("option");
+                        option.value = categoria.id;
+                        //console.log(option.value);
+                        //option.textContent = `${categoria.nome} (ID: ${categoria.id})`; // Exibe o nome e o ID
+                        option.textContent = categoria.nome; 
+                        categoriaSelect.appendChild(option);
+                    });
+                });
+        }
+
+        // Função para carregar as atividades
+        function carregarAtividades() {
+            fetch('/apiAtividades/atividades/')
+                .then(response => response.json())
+                .then(data => {
+                    let tabela = document.getElementById("atividadesTabela");
+                    tabela.innerHTML = ""; // Limpa a tabela
+
+                    data.forEach(atividade => {
+                        // Faz uma requisição para pegar o nome da categoria
+                        fetch(`/apiCategorias/categorias/?id=${atividade.categoria}`)
+                            .then(response => response.json())
+                            .then(categoria => {
+                                let row = `<tr>
+                                    <td>${atividade.nome}</td>
+                                    <td>${atividade.descricao}</td>
+                                    <td>${categoria.nome}</td> <!-- Exibe o nome da categoria -->
+                                    <td>
+                                        <button onclick="editarAtividade(${atividade.id}, '${atividade.nome}', '${atividade.descricao}', ${categoria.id})">Editar</button>
+                                        <button onclick="deletarAtividade(${atividade.id})">Excluir</button>
+                                    </td>
+                                </tr>`;
+                                tabela.innerHTML += row;
+                            })
+                            .catch(error => {
+                                //console.error("Erro ao carregar categoria:", error);
+                                tabela.innerHTML += `<tr><td colspan="4">Erro ao carregar categoria</td></tr>`;
+                            });
+                    });
+                });
+        }
+
+        // Função para adicionar nova atividade
+        document.getElementById("atividadeForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            let nome = document.getElementById("atividadeNome").value;
+            let descricao = document.getElementById("atividadeDescricao").value;
+            let categoria = document.getElementById("atividadeCategoria").value;
+
+            /*console.log({
+                nome: nome,
+                descricao: descricao,
+                categoria: categoria 
+            });*/
+
+            fetch('/apiAtividades/atividades/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    nome: nome,
+                    descricao: descricao,
+                    categoria: categoria
+                })
+            }).then(response => {
+                if (response.status === 201) {
+                    carregarAtividades();
+                    document.getElementById("atividadeNome").value = "";
+                    document.getElementById("atividadeDescricao").value = "";
+                    document.getElementById("atividadeCategoria").value = "";
+                } else {
+                    alert("Erro ao adicionar atividade!");
+                }
+            });
+        });
+
+        // Função para excluir atividade
+        function deletarAtividade(id) {
+            fetch(`/apiAtividades/atividades/?id=${id}`, {
+                method: 'DELETE'
+            }).then(response => {
+                if (response.status === 200) {
+                    carregarAtividades();
+                } else {
+                    alert("Erro ao excluir atividade!");
+                }
+            });
+        }
+
+        // Função para editar atividade
+        function editarAtividade(id, nomeAtual, descricaoAtual, categoriaAtual) {
+            let novoNome = prompt("Digite o novo nome da atividade:", nomeAtual);
+            let novaDescricao = prompt("Digite a nova descrição da atividade:", descricaoAtual);
+            let novaCategoria = prompt("Digite o novo ID da categoria:", categoriaAtual);
+
+            if (novoNome && novaDescricao && novaCategoria) {
+                fetch(`/apiAtividades/atividades/?id=${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        nome: novoNome,
+                        descricao: novaDescricao,
+                        categoria: novaCategoria
+                    })
+                }).then(response => {
+                    if (response.status === 202) {
+                        carregarAtividades();
+                    } else {
+                        alert("Erro ao editar atividade!");
+                    }
+                });
+            }
+        }
+
+        // Carrega as categorias e as atividades ao carregar a página
+        window.onload = function() {
+            carregarCategorias();
+            carregarAtividades();
+        };
+    </script>
+{% endblock %}

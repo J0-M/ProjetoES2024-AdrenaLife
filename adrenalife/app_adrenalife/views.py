@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import atividade, categoria_atividade
-from .serializers import categoriaAtividadeSerializer
+from .serializers import atividadeSerializer, categoriaAtividadeSerializer
 
 from .models import Evento
 
@@ -37,6 +37,7 @@ def categoriaManager(request):
     
     if request.method == 'GET':
         categoriaName = request.GET.get('nome', None)
+        categoriaId = request.GET.get('id', None)
 
         if categoriaName:
             try:
@@ -45,7 +46,14 @@ def categoriaManager(request):
                 return Response(serializer.data)
             except categoria_atividade.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
-        else:
+        elif categoriaId:
+            try:
+                categoria = categoria_atividade.objects.get(id=categoriaId)
+                serializer = categoriaAtividadeSerializer(categoria)
+                return Response(serializer.data)
+            except categoria_atividade.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:    
             categorias = categoria_atividade.objects.all()
             serializer = categoriaAtividadeSerializer(categorias, many=True)
             return Response(serializer.data)
@@ -110,30 +118,100 @@ def categoriaManager(request):
             categoria.delete()
             return Response(status=status.HTTP_200_OK)
         
-        except Exception as e:
-            print(traceback.format_exc())  # Mostra o erro completo no terminal/log
-            return Response({"erro": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-        
-        #except:
-            #return Response({"Categoria não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+        except:
+            return Response({"Categoria não encontrada"}, status=status.HTTP_404_NOT_FOUND)
         
 @csrf_exempt
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])
 @permission_classes([AllowAny])
 def atividadeManager(request):
     
-    #if request.method == 'GET':
+    if request.method == 'GET':
+        atividadeId = request.GET.get('id', None)
+
+        if atividadeId:
+            try:
+                att = atividade.objects.get(id=atividadeId)
+                serializer = atividadeSerializer(att)
+                return Response(serializer.data)
+            except att.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            atividades = atividade.objects.all()
+            serializer = atividadeSerializer(atividades, many=True)
+            return Response(serializer.data)
+    
+    if request.method == 'POST':
+        
+        newAtividade = request.data
+        name = newAtividade.get("nome", None)
+        description = newAtividade.get("descricao", None)
+        category = newAtividade.get("categoria", None)
+        
+        if not name or not description or not category:
+            return Response({"Preencha todos os campos"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        categoriaTest = categoria_atividade.objects.filter(id = category)
+        
+        if not categoriaTest.exists():
+            return Response({"Categoria inválida"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        atividadeTest = atividade.objects.filter(nome=name)
+        
+        if atividadeTest.exists():
+            return Response({"Nome já cadastrado"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = atividadeSerializer(data=newAtividade)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_201_CREATED)
+        
+        return Response(status=status.HTTP_400_BAD_REQUEST)
         
     
-    #if request.method == 'POST':
+    if request.method == 'PUT':
+        data = request.data
+        identificador = request.GET.get('id', None)
         
+        if not identificador:
+            return Response({"Id não informado"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        nameTest = data.get("nome", None)
+        atividadeTest = atividade.objects.filter(nome=nameTest)
+        
+        if atividadeTest.exists():
+            return Response({"Nome já cadastrado"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            updatedAtividade = atividade.objects.get(id=identificador)
+        
+        except:
+            return Response({"Atividade não encontrada"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = atividadeSerializer(updatedAtividade, data=data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     
-    #if request.method == 'PUT':
+    if request.method == 'DELETE':
+        identificador = request.GET.get('id', None)
         
+        if not id:
+            return Response({"Id não informado"}, status=status.HTTP_400_BAD_REQUEST)
         
-    
-    #if request.method == 'DELETE':
+        try:
+            att = atividade.objects.get(id=identificador)
+            
+            att.delete()
+            return Response(status=status.HTTP_200_OK)
+        
+        except:
+            return Response({"Atividade não encontrada"}, status=status.HTTP_404_NOT_FOUND)
     
     return None
         

@@ -1,24 +1,191 @@
 {% extends 'base.html' %}
-{%block conteudo%}
+
+{% block conteudo %}
 <div class="container mt-5">
-  <h1>Criação de Evento</h1>
-  <form action="#" method="post">
-    <div class="mb-3">
-      <label for="valor" class="form-label">Valor</label>
-      <input type="number" class="form-control" id="valor" name="valor" required>
-    </div>
+    <h2>Gerenciamento de Eventos</h2>
 
-    <div class="mb-3">
-      <label for="vagas_disponiveis" class="form-label">Vagas Disponiveis</label>
-      <input type="number" class="form-control" id="vagas_disponiveis" name="vagas_disponiveis" required>
-    </div>
+    <!-- Formulário para adicionar novo evento -->
+    <form id="eventoForm">
+        <input type="text" id="eventoNome" class="form-control mb-2" placeholder="Nome do Evento" required>
+        <input type="number" id="eventoValor" class="form-control mb-2" placeholder="Valor" step="0.01" required>
+        <input type="number" id="eventoVagas" class="form-control mb-2" placeholder="Vagas Disponíveis" required>
+        <input type="date" id="eventoData" class="form-control mb-2" required>
 
-    <div class="mb-3">
-      <label for="data" class="form-label">Data</label>
-      <input type="date" class="form-control" id="data" name="data" required>
-    </div>
+        <!-- Caixa de seleção para atividade -->
+        <select id="eventoAtividade" class="form-select mb-2" required>
+            <option value="" disabled selected>Escolha uma Atividade</option>
+        </select>
 
-    <button type="submit" class="btn btn-primary">Criar Evento</button>
-  </form>
+        <button type="submit" class="btn btn-primary">Adicionar Evento</button>
+    </form>
+
+    <table class="table mt-4">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Atividade</th>
+                <th>Valor</th>
+                <th>Vagas</th>
+                <th>Data</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody id="eventosTabela"></tbody>
+    </table>
 </div>
-{%endblock%}
+
+<div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarModalLabel">Editar Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulário dentro da modal -->
+                <input type="text" id="modalNome" class="form-control mb-2" placeholder="Nome da Atividade" required>
+
+                <select id="modalAtividade" class="form-select mb-2" required>
+                <option value="" disabled selected>Escolha uma Atividade</option>
+                </select>
+
+                <input type="number" id="modalValor" class="form-control mb-2" placeholder="Valor" step="0.01" required>
+                <input type="number" id="modalVagas" class="form-control mb-2" placeholder="Vagas Disponíveis" required>
+                <input type="date" id="modalData" class="form-control mb-2" required>
+        
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" id="salvarAlteracoes">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function carregarAtividades() {
+        fetch('/apiAtividades/atividades/')
+            .then(response => response.json())
+            .then(data => {
+                let atividadeSelect = document.getElementById("eventoAtividade");
+                let modalAtividadeSelect = document.getElementById("modalAtividade");
+
+                let clearAndFill = (selectElement) => {
+                    selectElement.innerHTML = '<option value="" disabled selected>Escolha uma Atividade</option>';
+                    data.forEach(atividade => {
+                        let option = document.createElement("option");
+                        option.value = atividade.id;
+                        option.textContent = atividade.nome;
+                        selectElement.appendChild(option);
+                    });
+                };
+
+                clearAndFill(atividadeSelect);
+                clearAndFill(modalAtividadeSelect);
+            });
+    }
+
+    function carregarEventos() {
+        fetch('/apiEventos/eventos/')
+            .then(response => response.json())
+            .then(data => {
+                let tabela = document.getElementById("eventosTabela");
+                tabela.innerHTML = "";
+
+                data.forEach(evento => {
+                    fetch(`/apiCategorias/atividades/?id=${evento.atividade}`)
+                        .then(response => response.json())
+                        .then(atividade => {
+                            let row = `<tr>
+                                <td>${evento.nome}</td>
+                                <td>${atividade.nome}</td>
+                                <td>R$${evento.valor}</td>
+                                <td>${evento.vagas_disponiveis}</td>
+                                <td>${evento.data}</td>
+                                <td>
+                                    <button class="btn btn-warning" onclick="editarEvento(${evento.id}, '${evento.nome}', '${evento.atividade}', '${evento.valor}', '${evento.vagas_disponiveis}', '${evento.data}', ${atividade.id})">Editar</button>
+                                    <button class="btn btn-danger" onclick="deletarEvento(${evento.id})">Excluir</button>
+                                </td>
+                            </tr>`;
+                            tabela.innerHTML += row;
+                        });
+                });
+            });
+    }
+
+    document.getElementById("eventoForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        let nome = document.getElementById("eventoNome").value;
+        let valor = document.getElementById("eventoValor").value;
+        let vagas = document.getElementById("eventoVagas").value;
+        let data = document.getElementById("eventoData").value;
+        let atividade = document.getElementById("eventoAtividade").value;
+
+        fetch('/apiEventos/eventos/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ nome, valor, vagas_disponiveis: vagas, data, atividade })
+        }).then(response => {
+            if (response.status === 201) {
+                carregarEventos();
+                document.getElementById("eventoForm").reset();
+            } else {
+                alert("Erro ao adicionar evento!");
+            }
+        });
+    });
+
+    function deletarEvento(id) {
+        fetch(`/apiEventos/eventos/?id=${id}`, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.status === 200) {
+                carregarEventos();
+            } else {
+                alert("Erro ao excluir evento!");
+            }
+        });
+    }
+
+    function editarEvento(id, nomeAtual, atividadeAtual, valorAtual, vagasAtual, dataAtual) {
+        let modal = new bootstrap.Modal(document.getElementById('editarModal'));
+        document.getElementById("modalNome").value = nomeAtual;
+        document.getElementById("modalAtividade").value = atividadeAtual;
+        document.getElementById("modalValor").value = valorAtual;
+        document.getElementById("modalVagas").value = vagasAtual;
+        document.getElementById("modalData").value = dataAtual;
+
+        document.getElementById("salvarAlteracoes").onclick = function() {
+            let novoNome = document.getElementById("modalNome").value;
+            let novaAtividade = document.getElementById("modalAtividade").value;
+            let novoValor = document.getElementById("modalValor").value;
+            let novoVagas = document.getElementById("modalVagas").value;
+            let novoData = document.getElementById("modalData").value;
+
+            if (novoNome && novaAtividade && novoValor && novoVagas && novoData) {
+                fetch(`/apiEventos/eventos/?id=${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome: novoNome, atividade: novaAtividade, valor: novoValor, vagas_disponiveis: novoVagas, data: novoData })
+                }).then(response => {
+                    if (response.status === 202) {
+                        carregarEventos();
+                        modal.hide();
+                    } else {
+                        alert("Erro ao editar evento!");
+                    }
+                });
+            } else {
+                alert("Preencha todos os campos!");
+            }
+        };
+
+        modal.show();
+    }
+
+    window.onload = function() {
+        carregarAtividades();
+        carregarEventos();
+    };
+</script>
+{% endblock %}

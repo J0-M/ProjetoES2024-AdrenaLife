@@ -28,9 +28,13 @@ class atividade(models.Model):
         return f'Nome: {self.nome} | Descrição: {self.descricao} | Categoria: {self.categoria.nome}'
 
 class Evento(models.Model):
-    #relacionamento com atividade 
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
+    nome = models.TextField(max_length=255, default='')
+    atividade = models.ForeignKey(atividade, on_delete=models.CASCADE, null=False)
     valor = models.IntegerField()
     vagas_disponiveis = models.IntegerField()
-    data = models.DateTimeField()
+    data = models.DateField()
+    
+    def __str__(self):
+        return f'Nome: {self.nome} | Atividade: {self.atividade.nome} | Valor: {self.valor} | Vagas Disponíveis: {self.vagas_disponiveis} | Data: {self.data}'
 

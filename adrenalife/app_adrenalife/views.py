@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse
 import json
 import traceback
+from datetime import datetime, date
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -11,7 +12,7 @@ from rest_framework.response import Response
 from rest_framework import status
 
 from .models import atividade, categoria_atividade
-from .serializers import atividadeSerializer, categoriaAtividadeSerializer
+from .serializers import atividadeSerializer, categoriaAtividadeSerializer, eventoSerializer
 
 from .models import Evento
 
@@ -134,7 +135,7 @@ def atividadeManager(request):
                 att = atividade.objects.get(id=atividadeId)
                 serializer = atividadeSerializer(att)
                 return Response(serializer.data)
-            except att.DoesNotExist:
+            except atividade.DoesNotExist:
                 return Response(status=status.HTTP_404_NOT_FOUND)
         else:
             atividades = atividade.objects.all()
@@ -224,17 +225,105 @@ def atividadeManager(request):
 # data.save() = Insere no banco de dados
 # data.delete() = DELETE
 
-def eventos(request):
-    # salvar os dados da tela para o banco de dados"
-    novo_evento = Evento()
-    novo_evento.valor = request.POST.get('valor')
-    novo_evento.vagas_disponiveis = request.POST.get('vagas_disponiveis')
-    novo_evento.data = request.POST.get('data')
-    novo_evento.save
-    # exibir todos os eventos já cadastrados
-    eventos = {
-        'eventos': Evento.objects.all()
-    }
-    # retornar os dados para a página de listagem de usuários
-    return render(request, 'eventos/eventos.html', eventos)
+@csrf_exempt
+@api_view(['GET', 'POST', 'DELETE', 'PUT'])
+@permission_classes([AllowAny])
+def eventoManager(request):
+    
+    # GET um objeto
+    
+    if request.method == 'GET':
+        eventoId = request.GET.get('id', None)
+
+        if eventoId:
+            try:
+                evt = Evento.objects.get(id=eventoId)
+                serializer = eventoSerializer(evt)
+                return Response(serializer.data)
+            except Evento.DoesNotExist:
+                return Response(status=status.HTTP_404_NOT_FOUND)
+        else:
+            eventos = Evento.objects.all()
+            serializer = eventoSerializer(eventos, many=True)
+            return Response(serializer.data)
+
+    # POST
+    
+    if request.method == 'POST':
         
+        newEvento = request.data
+        name = newEvento.get("nome", None)
+        activity = newEvento.get("atividade", None)
+        value = newEvento.get("valor", None)
+        slots = newEvento.get("vagas_disponiveis", None)
+        dateEvento = newEvento.get("data", None)
+        
+        if not name or not activity or not value or not slots or not dateEvento:
+            return Response({"Preencha todos os campos"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        dateEvento_obj = datetime.strptime(dateEvento, "%Y-%m-%d").date()
+        if dateEvento_obj < date.today():
+            return Response({"Data Inválida, Esta data já passou"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        atividadeTest = atividade.objects.filter(id = activity)
+        
+        if not atividadeTest.exists():
+            return Response({"Atividade inválida"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = eventoSerializer(data=newEvento)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_201_CREATED)
+        
+        # Mostrar qual o erro caso algo dê errado
+        if not serializer.is_valid():
+            return Response({"erro": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+    
+    # PUT
+    if request.method == 'PUT':
+        data = request.data # alterações enviadas pelo json(pelo body)
+        identificador = request.GET.get('id', None)
+        dateEvento = data.get("data", None)
+        
+        if not identificador:
+            return Response({"Id não informado"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        dateEvento_obj = datetime.strptime(dateEvento, "%Y-%m-%d").date()
+        if dateEvento_obj < date.today():
+            return Response({"Data Inválida, Esta data já passou"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            updatedEvento = Evento.objects.get(id=identificador)
+        
+        except:
+            return Response({"Evento não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+        serializer = eventoSerializer(updatedEvento, data=data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+    # DELETE
+    if request.method == 'DELETE':
+        identificador = request.GET.get('id', None)
+        
+        if not id:
+            return Response({"Id não informado"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            evt = Evento.objects.get(id=identificador)
+            
+            evt.delete()
+            return Response(status=status.HTTP_200_OK)
+        
+        except:
+            return Response({"Evento não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+    return None

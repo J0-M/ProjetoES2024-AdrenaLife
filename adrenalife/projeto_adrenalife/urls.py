@@ -13,6 +13,7 @@ urlpatterns = [
     
     path('apiCategorias/', include('app_adrenalife.urls'), name='api_cat'), # /api/(url) # links relacionados a api
     path('apiAtividades/', include('app_adrenalife.urls'), name='api_att'),
+    path('apiEventos/', include('app_adrenalife.urls'), name='api_evt'),
     
     path('categoria_atividades/', views.categoria_atividades, name='categoria_atividades')
 ]

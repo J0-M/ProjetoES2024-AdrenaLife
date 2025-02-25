@@ -31,7 +31,7 @@ class Evento(models.Model):
     id = models.AutoField(primary_key=True)
     nome = models.TextField(max_length=255, default='')
     atividade = models.ForeignKey(atividade, on_delete=models.CASCADE, null=False)
-    valor = models.IntegerField()
+    valor = models.FloatField()
     vagas_disponiveis = models.IntegerField()
     data = models.DateField()
     

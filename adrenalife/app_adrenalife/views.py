@@ -181,7 +181,7 @@ def atividadeManager(request):
         nameTest = data.get("nome", None)
         atividadeTest = atividade.objects.filter(nome=nameTest)
         
-        if atividadeTest.exists():
+        if nameTest and atividade.objects.filter(nome=nameTest).exclude(id=identificador).exists():
             return Response({"Nome já cadastrado"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:

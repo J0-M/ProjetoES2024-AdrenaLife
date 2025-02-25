@@ -167,6 +167,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ nome: novoNome, descricao: novaDescricao, categoria: novaCategoria })
                 }).then(response => {
+                    console.log(response);
                     if (response.status === 202) {
                         carregarAtividades();
                         modal.hide();

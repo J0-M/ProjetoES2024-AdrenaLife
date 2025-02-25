@@ -35,31 +35,31 @@
 </div>
 
 <div class="modal fade" id="editarModal" tabindex="-1" aria-labelledby="editarModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-      <div class="modal-content">
-          <div class="modal-header">
-              <h5 class="modal-title" id="editarModalLabel">Editar Evento</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-              <!-- Formulário dentro da modal -->
-              <input type="text" id="modalNome" class="form-control mb-2" placeholder="Nome da Atividade" required>
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarModalLabel">Editar Evento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Formulário dentro da modal -->
+                <input type="text" id="modalNome" class="form-control mb-2" placeholder="Nome da Atividade" required>
 
-              <select id="modalAtividade" class="form-select mb-2" required>
+                <select id="modalAtividade" class="form-select mb-2" required>
                 <option value="" disabled selected>Escolha uma Atividade</option>
-              </select>
+                </select>
 
-              <input type="number" id="modalValor" class="form-control mb-2" placeholder="Valor" step="0.01" required>
-              <input type="number" id="modalVagas" class="form-control mb-2" placeholder="Vagas Disponíveis" required>
-              <input type="date" id="modalData" class="form-control mb-2" required>
-          
-          </div>
-          <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-              <button type="button" class="btn btn-primary" id="salvarAlteracoes">Salvar alterações</button>
-          </div>
-      </div>
-  </div>
+                <input type="number" id="modalValor" class="form-control mb-2" placeholder="Valor" step="0.01" required>
+                <input type="number" id="modalVagas" class="form-control mb-2" placeholder="Vagas Disponíveis" required>
+                <input type="date" id="modalData" class="form-control mb-2" required>
+        
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" id="salvarAlteracoes">Salvar alterações</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -103,8 +103,8 @@
                                 <td>${evento.vagas_disponiveis}</td>
                                 <td>${evento.data}</td>
                                 <td>
-                                  <button class="btn btn-warning" onclick="editarEvento(${evento.id}, '${evento.nome}', '${evento.atividade}', '${evento.valor}', '${evento.vagas_disponiveis}', '${evento.data}', ${atividade.id})">Editar</button>
-                                  <button class="btn btn-danger" onclick="deletarEvento(${evento.id})">Excluir</button>
+                                    <button class="btn btn-warning" onclick="editarEvento(${evento.id}, '${evento.nome}', '${evento.atividade}', '${evento.valor}', '${evento.vagas_disponiveis}', '${evento.data}', ${atividade.id})">Editar</button>
+                                    <button class="btn btn-danger" onclick="deletarEvento(${evento.id})">Excluir</button>
                                 </td>
                             </tr>`;
                             tabela.innerHTML += row;
@@ -177,7 +177,7 @@
                 });
             } else {
                 alert("Preencha todos os campos!");
-              }
+            }
         };
 
         modal.show();

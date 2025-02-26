@@ -34,6 +34,19 @@ def logout(request):
     messages.success(request, 'Você saiu da sua conta.')
     return redirect('login')
 
+def listar_eventos(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    data_selecionada = request.GET.get('data', None)
+    eventos = Evento.objects.all()
+
+    if data_selecionada:
+        data_selecionada = datetime.strptime(data_selecionada, '%Y-%m-%d').date()
+        eventos = eventos.filter(data=data_selecionada)
+
+    return render(request, 'eventos/listar_eventos.html', {'eventos': eventos, 'data_selecionada': data_selecionada})
+
 def criar_usuario(request):
     if request.method == 'POST':
         # Coleta os dados do formulário
@@ -42,9 +55,9 @@ def criar_usuario(request):
         data_nascimento = request.POST.get('data_nascimento')
         telefone = request.POST.get('telefone')
         cidade = request.POST.get('cidade')
-        meio = request.POST.get('meio')
         email = request.POST.get('email')
         senha = request.POST.get('senha')
+        tipo_usuario = request.POST.get('tipo_usuario')  # Novo campo
 
         # Verifica se o email já está cadastrado
         if Usuario.objects.filter(email=email).exists():
@@ -64,12 +77,12 @@ def criar_usuario(request):
                 data_nascimento=data_nascimento,
                 telefone=telefone,
                 cidade=cidade,
-                meio=meio,
                 email=email,
-                senha=senha 
+                senha=senha,
+                tipo_usuario=tipo_usuario 
             )
             messages.success(request, 'Usuário cadastrado com sucesso!')
-            return redirect('login') 
+            return redirect('login')
         except Exception as e:
             messages.error(request, f'Erro ao cadastrar usuário: {str(e)}')
             return redirect('criar_usuario')
@@ -84,6 +97,8 @@ def login(request):
         try:
             usuario = Usuario.objects.get(email=email, senha=senha)
             request.session['usuario_id'] = usuario.id_usuario
+            request.session['tipo_usuario'] = usuario.tipo_usuario
+            print(usuario)
             messages.success(request, 'Login realizado com sucesso!')
             return redirect('home')
         except Usuario.DoesNotExist:
@@ -93,15 +108,18 @@ def login(request):
     return render(request, 'usuarios/login.html')
 
 def perfil(request):
-    if not request.session.get('usuario_id'): 
+    if not request.session.get('usuario_id'):  # Verifica se o usuário está logado
         return redirect('login')
 
-    usuario = Usuario.objects.get(id_usuario=request.session['usuario_id'])
+    usuario = Usuario.objects.get(id=request.session['usuario_id'])
 
     if request.method == 'POST':
+        # Coleta os dados do formulário
         novo_email = request.POST.get('email')
         novo_cpf = request.POST.get('cpf')
+        novo_tipo_usuario = request.POST.get('tipo_usuario')  
 
+        # Verifica se o novo email já está em uso por outro usuário
         if novo_email != usuario.email and Usuario.objects.filter(email=novo_email).exists():
             messages.error(request, 'Este email já está cadastrado.')
             return redirect('perfil')
@@ -110,15 +128,19 @@ def perfil(request):
             messages.error(request, 'Este CPF já está cadastrado.')
             return redirect('perfil')
 
+        # Atualiza os dados do usuário
         usuario.nome = request.POST.get('nome')
         usuario.cpf = novo_cpf
         usuario.data_nascimento = request.POST.get('data_nascimento')
         usuario.telefone = request.POST.get('telefone')
         usuario.cidade = request.POST.get('cidade')
-        usuario.meio = request.POST.get('meio')
         usuario.email = novo_email
         usuario.senha = request.POST.get('senha')
+        usuario.tipo_usuario = novo_tipo_usuario
         usuario.save()
+
+        request.session['tipo_usuario'] = novo_tipo_usuario
+
         messages.success(request, 'Perfil atualizado com sucesso!')
         return redirect('perfil')
 

@@ -26,16 +26,19 @@
             <input type="text" class="form-control" id="cidade" name="cidade" value="{{ usuario.cidade }}" maxlength="255" required>
         </div>
         <div class="mb-3">
-            <label for="meio" class="form-label">Meio</label>
-            <input type="text" class="form-control" id="meio" name="meio" value="{{ usuario.meio }}" maxlength="255" required>
-        </div>
-        <div class="mb-3">
             <label for="email" class="form-label">Email</label>
             <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" maxlength="254" required>
         </div>
         <div class="mb-3">
             <label for="senha" class="form-label">Senha</label>
             <input type="password" class="form-control" id="senha" name="senha" value="{{ usuario.senha }}" maxlength="8" required>
+        </div>
+        <div class="mb-3">
+            <label for="tipo_usuario" class="form-label">Tipo de Usuário</label>
+            <select class="form-select" id="tipo_usuario" name="tipo_usuario" required>
+                <option value="cliente" {% if usuario.tipo_usuario == 'cliente' %}selected{% endif %}>Cliente</option>
+                <option value="funcionario" {% if usuario.tipo_usuario == 'funcionario' %}selected{% endif %}>Funcionário</option>
+            </select>
         </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
     </form>

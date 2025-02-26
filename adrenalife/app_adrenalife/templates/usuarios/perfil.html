@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+
+{% block conteudo %}
+<div class="container mt-5">
+    <h1>Perfil</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="nome" class="form-label">Nome</label>
+            <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" maxlength="255" required>
+        </div>
+        <div class="mb-3">
+            <label for="cpf" class="form-label">CPF</label>
+            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ usuario.cpf }}" maxlength="14" required>
+        </div>
+        <div class="mb-3">
+            <label for="data_nascimento" class="form-label">Data de Nascimento</label>
+            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ usuario.data_nascimento|date:'Y-m-d' }}">
+        </div>
+        <div class="mb-3">
+            <label for="telefone" class="form-label">Telefone</label>
+            <input type="text" class="form-control" id="telefone" name="telefone" value="{{ usuario.telefone }}" maxlength="9" required>
+        </div>
+        <div class="mb-3">
+            <label for="cidade" class="form-label">Cidade</label>
+            <input type="text" class="form-control" id="cidade" name="cidade" value="{{ usuario.cidade }}" maxlength="255" required>
+        </div>
+        <div class="mb-3">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" maxlength="254" required>
+        </div>
+        <div class="mb-3">
+            <label for="senha" class="form-label">Senha</label>
+            <input type="password" class="form-control" id="senha" name="senha" value="{{ usuario.senha }}" maxlength="8" required>
+        </div>
+        <div class="mb-3">
+            <label for="tipo_usuario" class="form-label">Tipo de Usuário</label>
+            <select class="form-select" id="tipo_usuario" name="tipo_usuario" required>
+                <option value="cliente" {% if usuario.tipo_usuario == 'cliente' %}selected{% endif %}>Cliente</option>
+                <option value="funcionario" {% if usuario.tipo_usuario == 'funcionario' %}selected{% endif %}>Funcionário</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+    </form>
+</div>
+{% endblock %}

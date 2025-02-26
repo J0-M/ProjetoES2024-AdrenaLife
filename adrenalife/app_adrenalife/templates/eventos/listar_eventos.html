@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block conteudo %}
+<div class="container mt-5">
+    <h1>Eventos Disponíveis</h1>
+    <form method="get" class="mb-4">
+        <label for="data" class="form-label">Selecione a data:</label>
+        <input type="date" class="form-control" id="data" name="data" value="{{ data_selecionada|date:'Y-m-d' }}">
+        <button type="submit" class="btn btn-primary mt-2">Filtrar</button>
+    </form>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome</th>
+                <th>Atividade</th>
+                <th>Valor</th>
+                <th>Vagas Disponíveis</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for evento in eventos %}
+            <tr>
+                <td>{{ evento.nome }}</td>
+                <td>{{ evento.atividade.nome }}</td>
+                <td>R$ {{ evento.valor }}</td>
+                <td>{{ evento.vagas_disponiveis }}</td>
+                <td>{{ evento.data }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

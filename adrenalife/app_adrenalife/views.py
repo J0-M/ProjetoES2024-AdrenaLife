@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect
 from django.http import HttpResponse, JsonResponse
 import json
 import traceback
+from django.core.exceptions import ValidationError
 from datetime import datetime, date
 from django.contrib import messages
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
@@ -49,7 +50,6 @@ def listar_eventos(request):
 
 def criar_usuario(request):
     if request.method == 'POST':
-        # Coleta os dados do formulário
         nome = request.POST.get('nome')
         cpf = request.POST.get('cpf')
         data_nascimento = request.POST.get('data_nascimento')
@@ -57,34 +57,29 @@ def criar_usuario(request):
         cidade = request.POST.get('cidade')
         email = request.POST.get('email')
         senha = request.POST.get('senha')
-        tipo_usuario = request.POST.get('tipo_usuario')  # Novo campo
+        tipo_usuario = request.POST.get('tipo_usuario')
 
-        # Verifica se o email já está cadastrado
-        if Usuario.objects.filter(email=email).exists():
-            messages.error(request, 'Este email já está cadastrado.')
-            return redirect('criar_usuario')
+        # Cria uma instância do modelo para validar os campos
+        usuario = Usuario(
+            nome=nome,
+            cpf=cpf,
+            data_nascimento=data_nascimento,
+            telefone=telefone,
+            cidade=cidade,
+            email=email,
+            senha=senha,
+            tipo_usuario=tipo_usuario
+        )
 
-        # Verifica se o CPF já está cadastrado
-        if Usuario.objects.filter(cpf=cpf).exists():
-            messages.error(request, 'Este CPF já está cadastrado.')
-            return redirect('criar_usuario')
-
-        # Cria o usuário
         try:
-            usuario = Usuario.objects.create(
-                nome=nome,
-                cpf=cpf,
-                data_nascimento=data_nascimento,
-                telefone=telefone,
-                cidade=cidade,
-                email=email,
-                senha=senha,
-                tipo_usuario=tipo_usuario 
-            )
+            usuario.full_clean() 
+            usuario.save()
             messages.success(request, 'Usuário cadastrado com sucesso!')
             return redirect('login')
-        except Exception as e:
-            messages.error(request, f'Erro ao cadastrar usuário: {str(e)}')
+        except ValidationError as e:
+            for field, errors in e.message_dict.items():
+                for error in errors:
+                    messages.error(request, f'Erro no campo {field}: {error}')
             return redirect('criar_usuario')
 
     return render(request, 'usuarios/criar_conta.html')
@@ -98,7 +93,6 @@ def login(request):
             usuario = Usuario.objects.get(email=email, senha=senha)
             request.session['usuario_id'] = usuario.id_usuario
             request.session['tipo_usuario'] = usuario.tipo_usuario
-            print(usuario)
             messages.success(request, 'Login realizado com sucesso!')
             return redirect('home')
         except Usuario.DoesNotExist:

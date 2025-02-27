@@ -4,7 +4,7 @@ import json
 import traceback
 from datetime import datetime, date
 from django.contrib import messages
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -111,40 +111,63 @@ def perfil(request):
     if not request.session.get('usuario_id'):  # Verifica se o usuário está logado
         return redirect('login')
 
-    usuario = Usuario.objects.get(id=request.session['usuario_id'])
+    try:
+        # Busca o usuário pelo campo id_usuario
+        usuario = Usuario.objects.get(id_usuario=request.session['usuario_id'])
+    except Usuario.DoesNotExist:
+        messages.error(request, 'Usuário não encontrado.')
+        return redirect('login')
 
     if request.method == 'POST':
-        # Coleta os dados do formulário
-        novo_email = request.POST.get('email')
-        novo_cpf = request.POST.get('cpf')
-        novo_tipo_usuario = request.POST.get('tipo_usuario')  
-
-        # Verifica se o novo email já está em uso por outro usuário
-        if novo_email != usuario.email and Usuario.objects.filter(email=novo_email).exists():
-            messages.error(request, 'Este email já está cadastrado.')
-            return redirect('perfil')
-
-        if novo_cpf != usuario.cpf and Usuario.objects.filter(cpf=novo_cpf).exists():
-            messages.error(request, 'Este CPF já está cadastrado.')
-            return redirect('perfil')
-
         # Atualiza os dados do usuário
         usuario.nome = request.POST.get('nome')
-        usuario.cpf = novo_cpf
-        usuario.data_nascimento = request.POST.get('data_nascimento')
-        usuario.telefone = request.POST.get('telefone')
         usuario.cidade = request.POST.get('cidade')
-        usuario.email = novo_email
-        usuario.senha = request.POST.get('senha')
-        usuario.tipo_usuario = novo_tipo_usuario
+        usuario.telefone = request.POST.get('telefone')
         usuario.save()
-
-        request.session['tipo_usuario'] = novo_tipo_usuario
-
         messages.success(request, 'Perfil atualizado com sucesso!')
         return redirect('perfil')
 
+    # Passa o objeto 'usuario' para o template
     return render(request, 'usuarios/perfil.html', {'usuario': usuario})
+
+def alterar_senha(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    usuario = Usuario.objects.get(id_usuario=request.session['usuario_id'])
+
+    if request.method == 'POST':
+        senha_atual = request.POST.get('senha_atual')
+        nova_senha = request.POST.get('nova_senha')
+
+        if usuario.senha == senha_atual:
+            usuario.senha = nova_senha
+            usuario.save()
+            messages.success(request, 'Senha alterada com sucesso!')
+        else:
+            messages.error(request, 'Senha atual incorreta.')
+
+        return redirect('perfil')
+
+    return redirect('perfil')
+
+@csrf_protect
+def excluir_conta(request):
+    if not request.session.get('usuario_id'):
+        return redirect('login')
+
+    if request.method == 'POST':
+        try:
+            usuario = Usuario.objects.get(id_usuario=request.session['usuario_id'])
+            usuario.delete()
+            request.session.flush()  # Limpa a sessão
+            messages.success(request, 'Conta excluída com sucesso!')
+            return redirect('login')
+        except Usuario.DoesNotExist:
+            messages.error(request, 'Usuário não encontrado.')
+            return redirect('perfil')
+
+    return redirect('perfil')
 
 @csrf_exempt
 @api_view(['GET', 'POST', 'DELETE', 'PUT'])

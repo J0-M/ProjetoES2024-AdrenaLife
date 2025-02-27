@@ -2,45 +2,120 @@
 
 {% block conteudo %}
 <div class="container mt-5">
-    <h1>Perfil</h1>
-    <form method="post">
-        {% csrf_token %}
-        <div class="mb-3">
-            <label for="nome" class="form-label">Nome</label>
-            <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" maxlength="255" required>
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-body text-center">
+            <!-- Ícone de usuário -->
+            <div class="mb-4">
+                <i class="bi bi-person-circle" style="font-size: 4rem; color: #6af06a;"></i>
+            </div>
+
+            <!-- Informações do usuário -->
+            <h5 class="card-title">{{ usuario.nome }}</h5>
+            <p class="card-text">
+                <strong>CPF:</strong> {{ usuario.cpf }}<br>
+                <strong>Email:</strong> {{ usuario.email }}<br>
+                <strong>Telefone:</strong> {{ usuario.telefone }}<br>
+                <strong>Cidade:</strong> {{ usuario.cidade }}<br>
+                <strong>Tipo de Usuário:</strong> {{ usuario.get_tipo_usuario_display }}<br>
+            </p>
+
+            <!-- Botões -->
+            <div class="d-grid gap-2">
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editarPerfilModal">
+                    Editar Perfil
+                </button>
+                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#alterarSenhaModal">
+                    Alterar Senha
+                </button>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#excluirContaModal">
+                    Excluir Conta
+                </button>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="cpf" class="form-label">CPF</label>
-            <input type="text" class="form-control" id="cpf" name="cpf" value="{{ usuario.cpf }}" maxlength="14" required>
+    </div>
+</div>
+
+<!-- Modal de Editar Perfil -->
+<div class="modal fade" id="editarPerfilModal" tabindex="-1" aria-labelledby="editarPerfilModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editarPerfilModalLabel">Editar Perfil</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editarPerfilForm" method="post" action="{% url 'perfil' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="nome" class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="cidade" class="form-label">Cidade</label>
+                        <input type="text" class="form-control" id="cidade" name="cidade" value="{{ usuario.cidade }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="telefone" class="form-label">Telefone</label>
+                        <input type="text" class="form-control" id="telefone" name="telefone" value="{{ usuario.telefone }}" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="submit" form="editarPerfilForm" class="btn btn-primary">Salvar</button>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="data_nascimento" class="form-label">Data de Nascimento</label>
-            <input type="date" class="form-control" id="data_nascimento" name="data_nascimento" value="{{ usuario.data_nascimento|date:'Y-m-d' }}">
+    </div>
+</div>
+
+<!-- Modal de Alterar Senha -->
+<div class="modal fade" id="alterarSenhaModal" tabindex="-1" aria-labelledby="alterarSenhaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="alterarSenhaModalLabel">Alterar Senha</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="alterarSenhaForm" method="post" action="{% url 'alterar_senha' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="senha_atual" class="form-label">Senha Atual</label>
+                        <input type="password" class="form-control" id="senha_atual" name="senha_atual" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="nova_senha" class="form-label">Nova Senha</label>
+                        <input type="password" class="form-control" id="nova_senha" name="nova_senha" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="submit" form="alterarSenhaForm" class="btn btn-primary">Salvar</button>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="telefone" class="form-label">Telefone</label>
-            <input type="text" class="form-control" id="telefone" name="telefone" value="{{ usuario.telefone }}" maxlength="9" required>
+    </div>
+</div>
+
+<!-- Modal de Excluir Conta -->
+<div class="modal fade" id="excluirContaModal" tabindex="-1" aria-labelledby="excluirContaModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="excluirContaModalLabel">Excluir Conta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Tem certeza que deseja excluir sua conta? Esta ação não pode ser desfeita.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <form id="excluirContaForm" method="post" action="{% url 'excluir_conta' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Excluir Conta</button>
+                </form>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="cidade" class="form-label">Cidade</label>
-            <input type="text" class="form-control" id="cidade" name="cidade" value="{{ usuario.cidade }}" maxlength="255" required>
-        </div>
-        <div class="mb-3">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" class="form-control" id="email" name="email" value="{{ usuario.email }}" maxlength="254" required>
-        </div>
-        <div class="mb-3">
-            <label for="senha" class="form-label">Senha</label>
-            <input type="password" class="form-control" id="senha" name="senha" value="{{ usuario.senha }}" maxlength="8" required>
-        </div>
-        <div class="mb-3">
-            <label for="tipo_usuario" class="form-label">Tipo de Usuário</label>
-            <select class="form-select" id="tipo_usuario" name="tipo_usuario" required>
-                <option value="cliente" {% if usuario.tipo_usuario == 'cliente' %}selected{% endif %}>Cliente</option>
-                <option value="funcionario" {% if usuario.tipo_usuario == 'funcionario' %}selected{% endif %}>Funcionário</option>
-            </select>
-        </div>
-        <button type="submit" class="btn btn-primary">Salvar</button>
-    </form>
+    </div>
 </div>
 {% endblock %}

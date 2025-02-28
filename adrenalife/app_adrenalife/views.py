@@ -125,7 +125,7 @@ def perfil(request):
         return redirect('perfil')
 
     # Passa o objeto 'usuario' para o template
-    return render(request, 'usuarios/perfil.html', {'usuario': usuario})
+    return render(request, 'usuarios/perfil.html', {'usuario': usuario, 'eventos_inscritos': eventos_inscritos})
 
 def alterar_senha(request):
     if not request.session.get('usuario_id'):

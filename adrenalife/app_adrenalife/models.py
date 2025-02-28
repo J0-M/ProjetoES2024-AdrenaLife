@@ -81,9 +81,9 @@ class Usuario(models.Model):
     nome = models.CharField(max_length=255, validators=[validar_nome])
     cpf = models.CharField(max_length=14, unique=True, validators=[validar_cpf])
     data_nascimento = models.DateField(validators=[validar_data_nascimento])
-    telefone = models.CharField(max_length=11, validators=[validar_telefone])
+    telefone = models.CharField(max_length=15, validators=[validar_telefone])
     cidade = models.CharField(max_length=255, validators=[validar_cidade])
-    email = models.EmailField(max_length=254, validators=[validar_email])
+    email = models.CharField(max_length=254, validators=[validar_email])
     senha = models.CharField(max_length=8)
     tipo_usuario = models.CharField(max_length=11, choices=TIPO_USUARIO_CHOICES, default='cliente')
     

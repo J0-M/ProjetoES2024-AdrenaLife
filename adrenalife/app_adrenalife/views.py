@@ -13,6 +13,7 @@ from rest_framework import status
 from .models import atividade, categoria_atividade, Evento, Usuario, InscricaoEvento
 from .serializers import atividadeSerializer, categoriaAtividadeSerializer, eventoSerializer
 from .services import CategoriaAtividadeService, AtividadeService, EventoService, InscricaoService
+import re
 
 def home(request):
     return render(request, 'usuarios/home.html')
@@ -61,7 +62,6 @@ def criar_usuario(request):
         senha = request.POST.get('senha')
         tipo_usuario = request.POST.get('tipo_usuario')
 
-        # Cria uma instância do modelo para validar os campos
         usuario = Usuario(
             nome=nome,
             cpf=cpf,
@@ -74,17 +74,16 @@ def criar_usuario(request):
         )
 
         try:
-            usuario.full_clean() 
+            usuario.full_clean()
             usuario.save()
             messages.success(request, 'Usuário cadastrado com sucesso!')
             return redirect('login')
         except ValidationError as e:
-            for field, errors in e.message_dict.items():
-                for error in errors:
-                    messages.error(request, f'Erro no campo {field}: {error}')
-            return redirect('criar_usuario')
+            erros = {field: errors[0] for field, errors in e.message_dict.items()}  # Pega apenas o primeiro erro de cada campo
+            return render(request, 'usuarios/criar_conta.html', {'erros': erros, 'dados': request.POST})  # Passa os erros e os dados preenchidos
 
     return render(request, 'usuarios/criar_conta.html')
+
 
 def login(request):
     if request.method == 'POST':
@@ -104,11 +103,10 @@ def login(request):
     return render(request, 'usuarios/login.html')
 
 def perfil(request):
-    if not request.session.get('usuario_id'):  # Verifica se o usuário está logado
+    if not request.session.get('usuario_id'):
         return redirect('login')
 
     try:
-        # Busca o usuário pelo campo id_usuario
         usuario = Usuario.objects.get(id_usuario=request.session['usuario_id'])
     except Usuario.DoesNotExist:
         messages.error(request, 'Usuário não encontrado.')
@@ -126,8 +124,8 @@ def perfil(request):
         messages.success(request, 'Perfil atualizado com sucesso!')
         return redirect('perfil')
 
-    # Passa o objeto 'usuario' e a lista de 'eventos_inscritos' para o template
-    return render(request, 'usuarios/perfil.html', {'usuario': usuario, 'eventos_inscritos': eventos_inscritos})
+    # Passa o objeto 'usuario' para o template
+    return render(request, 'usuarios/perfil.html', {'usuario': usuario})
 
 def alterar_senha(request):
     if not request.session.get('usuario_id'):

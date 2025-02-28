@@ -11,7 +11,6 @@
     <title>Cadastro</title>
   </head>
   <body>
-    {% if request.session.usuario_id %}
     <nav class="navbar navbar-expand-lg navbar-light" style="background-color: rgb(106, 240, 106);">
       <div class="container-fluid">
           <a class="navbar-brand" href="{% url 'home' %}" style="text-decoration: none; color: black; background-color: white; border: 2px solid black; padding: 8px 16px; border-radius: 4px; text-align: center;">Início</a>
@@ -51,7 +50,6 @@
           </div>
       </div>
   </nav>
-    {% endif %}
 
     <div class="container mt-5">
       {% block conteudo %}

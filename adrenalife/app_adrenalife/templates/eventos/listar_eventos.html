@@ -17,6 +17,7 @@
                 <th>Valor</th>
                 <th>Vagas Disponíveis</th>
                 <th>Data</th>
+                <th>Ação</th> <!-- Coluna para o botão de inscrição -->
             </tr>
         </thead>
         <tbody>
@@ -27,9 +28,28 @@
                 <td>R$ {{ evento.valor }}</td>
                 <td>{{ evento.vagas_disponiveis }}</td>
                 <td>{{ evento.data }}</td>
+                <td>
+                    <!-- Formulário de Inscrição -->
+                    <form action="{% url 'inscricao' %}" method="POST" style="display: inline-block;" id="form-{{ evento.id }}">
+                        {% csrf_token %}
+                        <input type="hidden" name="evento_id" value="{{ evento.id }}">
+                        <input type="hidden" name="usuario_id" value="{{ usuario_id }}">
+                        <button type="button" class="btn btn-success btn-sm" onclick="logIds('{{ evento.id }}', '{{ usuario_id }}')">Inscrever-se</button>
+                    </form>
+                </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
 </div>
+
+<script>
+    function logIds(eventoId, usuarioId) {
+        console.log("ID do Evento: " + eventoId);
+        console.log("ID do Usuário: " + usuarioId);
+
+        var form = document.getElementById('form-' + eventoId);
+        form.submit(); // Envia o formulário
+    }
+</script>
 {% endblock %}

@@ -1,6 +1,8 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages
 from django.core.exceptions import ValidationError
+from django.http import JsonResponse
+from django.urls import reverse
 
 from datetime import datetime, date
 
@@ -306,10 +308,11 @@ class InscricaoService:
             evento.vagas_disponiveis -= 1
             evento.save()
             
-            return Response({"message": f"Usuário {usuario.nome} inscrito no evento {evento.nome} com sucesso!"}, status=status.HTTP_201_CREATED)
+            return Response({"message": f"Usuário {usuario.nome} inscrito no evento {evento.nome} com sucesso!",
+                             "redirect_url": reverse('perfil')}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-        
+
     @staticmethod
     def delete_inscricao(request):
         usuario_id = request.data.get('usuario_id')
@@ -413,6 +416,8 @@ class UserServices:
 
         return render(request, 'usuarios/login.html')
     
+
+
     @staticmethod
     def perfil(request):
         if not request.session.get('usuario_id'):
@@ -433,8 +438,13 @@ class UserServices:
             usuario.cidade = request.POST.get('cidade')
             usuario.telefone = request.POST.get('telefone')
             usuario.save()
-            messages.success(request, 'Perfil atualizado com sucesso!')
-            return redirect('perfil')
+
+            # Verifica se a requisição é AJAX
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True})
+            else:
+                messages.success(request, 'Perfil atualizado com sucesso!')
+                return redirect('perfil')
 
         # Passa o objeto 'usuario' para o template
         return render(request, 'usuarios/perfil.html', {'usuario': usuario, 'eventos_inscritos': eventos_inscritos})

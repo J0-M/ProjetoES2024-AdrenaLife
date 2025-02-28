@@ -144,6 +144,7 @@
     </div>
 </div>
 
+
 <script>
     document.getElementById("salvarPerfil").addEventListener("click", function() {
         let form = document.getElementById("editarPerfilForm");
@@ -151,12 +152,18 @@
 
         fetch("{% url 'perfil' %}", {
             method: "POST",
-            body: formData
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest' // Indica que é uma requisição AJAX
+            }
         })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                location.reload(); // Recarrega a página se tudo estiver certo
+                // Fecha o modal antes de recarregar a página
+                let modal = bootstrap.Modal.getInstance(document.getElementById("editarPerfilModal"));
+                modal.hide(); // Fecha o modal
+                location.reload(); // Recarrega a página
             } else {
                 // Exibe os erros no modal sem fechar
                 document.getElementById("erro-nome").textContent = data.erros.nome || "";

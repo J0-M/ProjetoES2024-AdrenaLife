@@ -11,7 +11,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
 
-from .models import atividade, categoria_atividade
+from .models import atividade, categoria_atividade, InscricaoEvento, Usuario
 from .serializers import atividadeSerializer, categoriaAtividadeSerializer, eventoSerializer
 
 from .models import Evento
@@ -293,3 +293,61 @@ class EventoService:
         
         except:
             return Response({"Evento não encontrado"}, status=status.HTTP_404_NOT_FOUND)
+        
+class InscricaoService:
+    @staticmethod
+    def create_inscricao(request):
+        usuario_id = request.data.get('usuario_id')
+        evento_id = request.data.get('evento_id')
+
+        if not usuario_id or not evento_id:
+            return Response({"error": "Usuário e Evento são necessários."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            usuario = Usuario.objects.get(id_usuario=usuario_id)
+            evento = Evento.objects.get(id=evento_id)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Evento.DoesNotExist:
+            return Response({"error": "Evento não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        if usuario.eventos_inscritos.filter(id=evento.id).exists():
+            return Response({"message": "Usuário já inscrito neste evento."}, status=status.HTTP_200_OK)
+
+        try:
+            inscricao = InscricaoEvento.objects.create(usuario=usuario, evento=evento)
+            
+            evento.vagas_disponiveis -= 1
+            evento.save()
+            
+            return Response({"message": f"Usuário {usuario.nome} inscrito no evento {evento.nome} com sucesso!"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+    @staticmethod
+    def delete_inscricao(request):
+        usuario_id = request.data.get('usuario_id')
+        evento_id = request.data.get('evento_id')
+
+        if not usuario_id or not evento_id:
+            return Response({"error": "Usuário e Evento são necessários."}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            usuario = Usuario.objects.get(id_usuario=usuario_id)
+            evento = Evento.objects.get(id=evento_id)
+        except Usuario.DoesNotExist:
+            return Response({"error": "Usuário não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+        except Evento.DoesNotExist:
+            return Response({"error": "Evento não encontrado."}, status=status.HTTP_404_NOT_FOUND)
+
+        inscricao = InscricaoEvento.objects.filter(usuario=usuario, evento=evento).first()
+
+        if not inscricao:
+            return Response({"error": "Usuário não está inscrito neste evento."}, status=status.HTTP_400_BAD_REQUEST)
+
+        inscricao.delete()
+
+        evento.vagas_disponiveis += 1
+        evento.save()
+
+        return Response({"message": f"Inscrição de {usuario.nome} no evento {evento.nome} cancelada com sucesso! Vagas restantes: {evento.vagas_disponiveis}"}, status=status.HTTP_200_OK)

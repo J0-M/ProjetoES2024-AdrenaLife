@@ -13,6 +13,7 @@ from rest_framework import status
 from .models import atividade, categoria_atividade, Evento, Usuario
 from .serializers import atividadeSerializer, categoriaAtividadeSerializer, eventoSerializer
 from .services import CategoriaAtividadeService, AtividadeService, EventoService
+import re
 
 def home(request):
     return render(request, 'usuarios/home.html')
@@ -100,26 +101,29 @@ def login(request):
     return render(request, 'usuarios/login.html')
 
 def perfil(request):
-    if not request.session.get('usuario_id'):  # Verifica se o usuário está logado
+    if not request.session.get('usuario_id'):
         return redirect('login')
 
     try:
-        # Busca o usuário pelo campo id_usuario
         usuario = Usuario.objects.get(id_usuario=request.session['usuario_id'])
     except Usuario.DoesNotExist:
         messages.error(request, 'Usuário não encontrado.')
         return redirect('login')
 
     if request.method == 'POST':
-        # Atualiza os dados do usuário
-        usuario.nome = request.POST.get('nome')
-        usuario.cidade = request.POST.get('cidade')
-        usuario.telefone = request.POST.get('telefone')
-        usuario.save()
-        messages.success(request, 'Perfil atualizado com sucesso!')
-        return redirect('perfil')
+        usuario.nome = request.POST.get('nome', '').strip()
+        usuario.cidade = request.POST.get('cidade', '').strip()
+        usuario.telefone = request.POST.get('telefone', '').strip()
 
-    # Passa o objeto 'usuario' para o template
+        try:
+            usuario.full_clean()
+            usuario.save()
+            return JsonResponse({'success': True})
+
+        except ValidationError as e:
+            erros = {field: error[0] for field, error in e.message_dict.items()}
+            return JsonResponse({'success': False, 'erros': erros})
+
     return render(request, 'usuarios/perfil.html', {'usuario': usuario})
 
 def alterar_senha(request):

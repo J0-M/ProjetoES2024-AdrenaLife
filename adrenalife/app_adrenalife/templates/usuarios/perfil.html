@@ -36,6 +36,7 @@
 </div>
 
 <!-- Modal de Editar Perfil -->
+<!-- Modal de Editar Perfil -->
 <div class="modal fade" id="editarPerfilModal" tabindex="-1" aria-labelledby="editarPerfilModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -49,25 +50,27 @@
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome</label>
                         <input type="text" class="form-control" id="nome" name="nome" value="{{ usuario.nome }}" required>
+                        <div class="text-danger" id="erro-nome">{{ erros.nome }}</div>
                     </div>
                     <div class="mb-3">
                         <label for="cidade" class="form-label">Cidade</label>
                         <input type="text" class="form-control" id="cidade" name="cidade" value="{{ usuario.cidade }}" required>
+                        <div class="text-danger" id="erro-cidade">{{ erros.cidade }}</div>
                     </div>
                     <div class="mb-3">
                         <label for="telefone" class="form-label">Telefone</label>
                         <input type="text" class="form-control" id="telefone" name="telefone" value="{{ usuario.telefone }}" required>
+                        <div class="text-danger" id="erro-telefone">{{ erros.telefone }}</div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-                <button type="submit" form="editarPerfilForm" class="btn btn-primary">Salvar</button>
+                <button type="button" class="btn btn-primary" id="salvarPerfil">Salvar</button>
             </div>
         </div>
     </div>
 </div>
-
 <!-- Modal de Alterar Senha -->
 <div class="modal fade" id="alterarSenhaModal" tabindex="-1" aria-labelledby="alterarSenhaModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -118,4 +121,28 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById("salvarPerfil").addEventListener("click", function() {
+        let form = document.getElementById("editarPerfilForm");
+        let formData = new FormData(form);
+
+        fetch("{% url 'perfil' %}", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload(); // Recarrega a página se tudo estiver certo
+            } else {
+                // Exibe os erros no modal sem fechar
+                document.getElementById("erro-nome").textContent = data.erros.nome || "";
+                document.getElementById("erro-cidade").textContent = data.erros.cidade || "";
+                document.getElementById("erro-telefone").textContent = data.erros.telefone || "";
+            }
+        })
+        .catch(error => console.error("Erro:", error));
+    });
+</script>
 {% endblock %}

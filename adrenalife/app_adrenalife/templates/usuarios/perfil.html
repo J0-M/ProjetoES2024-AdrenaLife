@@ -19,8 +19,30 @@
                 <strong>Tipo de Usuário:</strong> {{ usuario.get_tipo_usuario_display }}<br>
             </p>
 
+            <!-- Eventos Inscritos -->
+            <h5 class="mt-4">Eventos Inscritos</h5>
+            <ul class="list-group">
+                {% for evento in eventos_inscritos %}
+                    <li class="list-group-item">
+                        {{ evento.nome }} ({{ evento.data }})<br>
+                        <small>Vagas disponíveis: {{ evento.vagas_disponiveis }}</small>
+                        
+                        <!-- Formulário para Cancelar Inscrição -->
+                        <form action="{% url 'inscricao' %}" method="POST" style="display: inline-block;">
+                            {% csrf_token %}
+                            <input type="hidden" name="_method" value="DELETE">
+                            <input type="hidden" name="evento_id" value="{{ evento.id }}">
+                            <input type="hidden" name="usuario_id" value="{{ usuario.id_usuario }}">
+                            <button type="submit" class="btn btn-danger btn-sm">Cancelar Inscrição</button>
+                        </form>
+                    </li>
+                {% empty %}
+                    <li class="list-group-item">Você não está inscrito em nenhum evento.</li>
+                {% endfor %}
+            </ul>
+
             <!-- Botões -->
-            <div class="d-grid gap-2">
+            <div class="d-grid gap-2 mt-4">
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editarPerfilModal">
                     Editar Perfil
                 </button>

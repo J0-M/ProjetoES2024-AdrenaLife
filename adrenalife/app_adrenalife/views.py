@@ -10,9 +10,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework import status
-from .models import atividade, categoria_atividade, Evento, Usuario
+from .models import atividade, categoria_atividade, Evento, Usuario, InscricaoEvento
 from .serializers import atividadeSerializer, categoriaAtividadeSerializer, eventoSerializer
-from .services import CategoriaAtividadeService, AtividadeService, EventoService
+from .services import CategoriaAtividadeService, AtividadeService, EventoService, InscricaoService
 import re
 
 def home(request):
@@ -40,6 +40,8 @@ def listar_eventos(request):
     if not request.session.get('usuario_id'):
         return redirect('login')
 
+    usuario_id = request.session.get('usuario_id')
+    
     data_selecionada = request.GET.get('data', None)
     eventos = Evento.objects.all()
 
@@ -47,7 +49,7 @@ def listar_eventos(request):
         data_selecionada = datetime.strptime(data_selecionada, '%Y-%m-%d').date()
         eventos = eventos.filter(data=data_selecionada)
 
-    return render(request, 'eventos/listar_eventos.html', {'eventos': eventos, 'data_selecionada': data_selecionada})
+    return render(request, 'eventos/listar_eventos.html', {'eventos': eventos, 'data_selecionada': data_selecionada, 'usuario_id': usuario_id})
 
 def criar_usuario(request):
     if request.method == 'POST':
@@ -110,20 +112,19 @@ def perfil(request):
         messages.error(request, 'Usuário não encontrado.')
         return redirect('login')
 
+    # Obtém os eventos nos quais o usuário está inscrito
+    eventos_inscritos = usuario.eventos_inscritos.all()
+
     if request.method == 'POST':
-        usuario.nome = request.POST.get('nome', '').strip()
-        usuario.cidade = request.POST.get('cidade', '').strip()
-        usuario.telefone = request.POST.get('telefone', '').strip()
+        # Atualiza os dados do usuário
+        usuario.nome = request.POST.get('nome')
+        usuario.cidade = request.POST.get('cidade')
+        usuario.telefone = request.POST.get('telefone')
+        usuario.save()
+        messages.success(request, 'Perfil atualizado com sucesso!')
+        return redirect('perfil')
 
-        try:
-            usuario.full_clean()
-            usuario.save()
-            return JsonResponse({'success': True})
-
-        except ValidationError as e:
-            erros = {field: error[0] for field, error in e.message_dict.items()}
-            return JsonResponse({'success': False, 'erros': erros})
-
+    # Passa o objeto 'usuario' para o template
     return render(request, 'usuarios/perfil.html', {'usuario': usuario})
 
 def alterar_senha(request):
@@ -228,3 +229,11 @@ def eventoManager(request):
     # DELETE
     if request.method == 'DELETE':
         return(EventoService.delete_evento(request))
+
+@api_view(['POST', 'DELETE'])
+def inscricaoManager(request):
+    if request.method == 'DELETE' or request.data.get('_method') == 'DELETE':
+        return(InscricaoService.delete_inscricao(request))
+    
+    if request.method == 'POST':
+        return(InscricaoService.create_inscricao(request))

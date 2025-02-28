@@ -59,7 +59,6 @@ def criar_usuario(request):
         senha = request.POST.get('senha')
         tipo_usuario = request.POST.get('tipo_usuario')
 
-        # Cria uma instância do modelo para validar os campos
         usuario = Usuario(
             nome=nome,
             cpf=cpf,
@@ -72,17 +71,16 @@ def criar_usuario(request):
         )
 
         try:
-            usuario.full_clean() 
+            usuario.full_clean()
             usuario.save()
             messages.success(request, 'Usuário cadastrado com sucesso!')
             return redirect('login')
         except ValidationError as e:
-            for field, errors in e.message_dict.items():
-                for error in errors:
-                    messages.error(request, f'Erro no campo {field}: {error}')
-            return redirect('criar_usuario')
+            erros = {field: errors[0] for field, errors in e.message_dict.items()}  # Pega apenas o primeiro erro de cada campo
+            return render(request, 'usuarios/criar_conta.html', {'erros': erros, 'dados': request.POST})  # Passa os erros e os dados preenchidos
 
     return render(request, 'usuarios/criar_conta.html')
+
 
 def login(request):
     if request.method == 'POST':

@@ -5,7 +5,7 @@
 
 # AdrenaLife
 
-##Sobre o Projeto
+## Sobre o Projeto
 
 Este projeto simula um site de cadastro de eventos, onde cada evento possui uma atividade e cada atividade pertence a uma categoria.
 O sistema possui backend em Django e frontend em React, seguindo boas práticas de arquitetura de software e design patterns.

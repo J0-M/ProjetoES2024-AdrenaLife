@@ -1,13 +1,44 @@
 # Contribuidores
-João Marcos Avancini: https://github.com/J0-M
-Letícia Cristina da Silva: https://github.com/leticia-csilva
-Raquel Real Haagsma: https://github.com/rhaagsma
+[João Marcos Avancini](https://github.com/J0-M)  
+[Letícia Cristina da Silva](https://github.com/leticia-csilva)  
+[Raquel Real Haagsma](https://github.com/rhaagsma)  
 
 # AdrenaLife
 
-Este trabalho busca simular um site de cadastro de eventos diversos. Cada evento possui uma atividade, que, por sua vez, possui uma categoria.
+##Sobre o Projeto
 
-Padrão de projeto Implementado:
+Este projeto simula um site de cadastro de eventos, onde cada evento possui uma atividade e cada atividade pertence a uma categoria.
+O sistema possui backend em Django e frontend em React, seguindo boas práticas de arquitetura de software e design patterns.
+
+## Tecnologias Utilizadas
+- Backend: Django, Django REST Framework, Pytest
+- Frontend: React, Axios
+- Banco de Dados: SQLite (padrão Django)
+
+##Estrutura do Projeto
+<pre markdown="1">
+ProjetoES2024-AdrenaLife/
+│── adrenalife/              # Configurações principais do Django
+│── app_adrenalife/          # Aplicação Django (models, views, services, tests)
+│   ├── migrations/          # Migrações do banco de dados
+│   ├── tests.py             # Testes automatizados com Pytest
+│   ├── models.py            # Modelos de Categoria, Atividade e Evento
+│   ├── views.py             # Views da API
+│   ├── services/            # Implementação do padrão Facade
+│   └── serializers.py       # Serializadores Django REST Framework
+│
+│── frontend/                # Aplicação React (interface web)
+│   ├── public/
+│   └── src/
+│       ├── components/      # Componentes React reutilizáveis
+│       ├── pages/           # Páginas do sistema
+│       ├── services/        # Integração com a API
+│       └── App.js           # Componente principal
+│
+│── manage.py                # Comando principal Django
+│── requirements.txt         # Dependências do backend
+│── package.json             # Dependências do frontend
+</pre>
 
 # Facade
 

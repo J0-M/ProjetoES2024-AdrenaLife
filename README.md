@@ -1,3 +1,8 @@
+# Contribuidores
+João Marcos Avancini: https://github.com/J0-M
+Letícia Cristina da Silva: https://github.com/leticia-csilva
+Raquel Real Haagsma: https://github.com/rhaagsma
+
 # AdrenaLife
 
 Este trabalho busca simular um site de cadastro de eventos diversos. Cada evento possui uma atividade, que, por sua vez, possui uma categoria.

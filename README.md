@@ -16,7 +16,19 @@ O sistema possui backend em Django e frontend em React, seguindo boas práticas 
 - Banco de Dados: SQLite (padrão Django)
 
 ## Funcionalidades 
+- Gerenciamento de usuários
+    - Criação de conta
+    - Login e autenticação
+    - Perfil do usuário
 
+- Atividades
+    - Cadastro de atividades
+    - Categorias de atividades
+
+- Eventos
+    - Criação e listagem de eventos
+    - Associação de atividades a eventos
+    - Inscrição de usuários em eventos
 
 ## Estrutura do Projeto
 <pre markdown="1">
@@ -43,7 +55,14 @@ ProjetoES2024-AdrenaLife/
 │── package.json             # Dependências do frontend
 </pre>
 
-# Facade
+## Padrões de projeto implementados
+- MTV (Model-Template-View) → arquitetura nativa do Django
+- Services Layer → centralização de regras de negócio em services.py
+- Serializers → para conversão de modelos em formatos utilizáveis em APIs
+- URLs organizadas por app → modularidade no roteamento
+- Uso de migrations → controle de evolução do banco de dados
+
+### Facade
 
 Link da documentação: https://refactoring.guru/pt-br/design-patterns/facade
 
@@ -214,19 +233,57 @@ def test_create_and_get_atividade():
     assert atividade_encontrada.get("nome") == "Corrida Matinal"
     assert atividade_encontrada.get("descricao") == "Treino de corrida de 5km"
 ```
-Para rodar os testes, é necessário:
-# 1 - Instalar o pytest
-```
-pip install pytest pytest-django
-```
 
-# 2 - Acessar a pasta correta de tests.py (Arquivo onde está programado os testes)
-```
-cd adrenalife
-cd app_adrenalife
-```
+## Como executar?
 
-# 3 - Rodar o pytest
-```
-pytest tests.py
-```
+1. Requisitos
+   - Pyhton 3 Instalado
+   - Virtualenv
+
+2. Clonar o repositório e acessar a pasta
+   `
+    git clone 
+    cd ProjetoES2024-AdrenaLife-main/adrenalife
+   `
+3. Instalar as dependências
+   `pip install -r requirements.txt`
+
+4. Aplicar as Migrations
+   `python manage.py migrate`
+
+5. Rodar o servidor
+   `python manage.py runserver`
+   A aplicação estará disponível em: `http://127.0.0.1:8000`
+
+6. Testes
+    Para rodar os testes, é necessário:
+    6.1 - Instalar o pytest
+    ```
+    pip install pytest pytest-django
+    ```
+
+    6.2 - Acessar a pasta correta de tests.py (Arquivo onde está programado os testes)
+    ```
+    cd adrenalife
+    cd app_adrenalife
+    ```
+
+    6.3 - Rodar o pytest
+    ```
+    pytest tests.py
+    ```
+
+## Aprendizado
+Durante o desenvolvimento do projeto, foram aprendidos e aplicados:
+- Estruturação de um projeto Django em múltiplos apps
+- Criação de modelos e relacionamento entre entidades
+- Implementação de templates para front-end básico
+- Boas práticas de versionamento e modularização do código
+- Uso de migrations para evolução de banco de dados
+- Criação de APIs e uso de serializers
+
+## Próximos passos
+- Adicionar autenticação com tokens (JWT) para APIs
+- Criar testes mais abrangentes de integração
+- Criar um sistema de pagamento para eventos
+- Implementar notificações por e-mail

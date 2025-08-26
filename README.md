@@ -15,6 +15,9 @@ O sistema possui backend em Django e frontend em React, seguindo boas práticas 
 - Frontend: React, Axios
 - Banco de Dados: SQLite (padrão Django)
 
+## Funcionalidades 
+
+
 ## Estrutura do Projeto
 <pre markdown="1">
 ProjetoES2024-AdrenaLife/

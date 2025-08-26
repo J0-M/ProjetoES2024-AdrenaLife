@@ -242,7 +242,7 @@ def test_create_and_get_atividade():
 
 2. Clonar o repositório e acessar a pasta
    `
-    git clone 
+    git clone https://github.com/J0-M/ProjetoES2024-AdrenaLife.git
     cd ProjetoES2024-AdrenaLife-main/adrenalife
    `
 3. Instalar as dependências
@@ -256,7 +256,7 @@ def test_create_and_get_atividade():
    A aplicação estará disponível em: `http://127.0.0.1:8000`
 
 6. Testes
-    Para rodar os testes, é necessário:
+    Para rodar os testes, é necessário:  
     6.1 - Instalar o pytest
     ```
     pip install pytest pytest-django
